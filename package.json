@@ -1,0 +1,23 @@
+{
+  "name": "nodebb-plugin-mff-discord",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord.git"
+  },
+  "author": "Superloup10 <Superloup10@gmail.com>",
+  "nbbpm": {
+    "compatibility": "^1.0.0"
+  },
+  "dependencies": {},
+  "bugs": {
+    "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord/issues"
+  },
+  "homepage": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord#readme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "ISC"
+}

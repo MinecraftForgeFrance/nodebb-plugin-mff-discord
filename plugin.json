@@ -1,0 +1,6 @@
+{
+  "id": "nodebb-plugin-mff-discord",
+  "name": "NodeBB Plugin MFF Discord",
+  "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord",
+  "library": "./index.js"
+}
