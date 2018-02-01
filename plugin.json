@@ -2,5 +2,11 @@
   "id": "nodebb-plugin-mff-discord",
   "name": "NodeBB Plugin MFF Discord",
   "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord",
-  "library": "./index.js"
+  "library": "./index.js",
+  "hooks": [
+    {
+      "hook": "static:app.load",
+      "method": "init"
+    }
+  ]
 }
