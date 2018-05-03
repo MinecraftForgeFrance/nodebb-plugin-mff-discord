@@ -1,12 +1,11 @@
 {
-  "id": "nodebb-plugin-mff-discord",
-  "name": "NodeBB Plugin MFF Discord",
-  "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord",
-  "library": "./index.js",
-  "hooks": [
-    {
-      "hook": "static:app.load",
-      "method": "init"
-    }
-  ]
+    "id": "nodebb-plugin-mff-discord",
+    "name": "NodeBB Plugin MFF Discord",
+    "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord",
+    "library": "./index.js",
+    "templates": "./static/templates",
+    "hooks": [
+        { "hook": "static:app.load", "method": "init" },
+        { "hook": "filter:config.get", "method": "appendConfig" }
+    ]
 }
