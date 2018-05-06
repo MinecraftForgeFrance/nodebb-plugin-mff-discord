@@ -1,6 +1,11 @@
 const user = module.parent.require("./user");
 const socketModule = module.parent.require("./socket.io/modules");
+const socketIndex = module.parent.require('./socket.io/index')
+const socketPlugins = module.parent.require('./socket.io/plugins');
 const meta = module.parent.require('./meta');
+const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
+const request = module.parent.require('request');
+const nconf = require('nconf');
 
 const MFFDiscordBridge = {
     token: "changeme",
@@ -14,6 +19,7 @@ const MFFDiscordBridge = {
         app.post("/discordapi/register", checkToken, generateAndSendCode);
         app.get("/discordapi/tutorial", checkToken, getTutorial);
         app.get("/discordapi/solvedthread", checkToken, getSolvedThread);
+        app.post("/discordapi/sendshout", checkToken, sendShout);
 
         // admin panel
         app.get('/admin/plugins/mff-discord', middleware.admin.buildHeader, renderAdmin);
@@ -34,6 +40,40 @@ const MFFDiscordBridge = {
                 }
             }
         });
+
+        let originSend = socketPlugins.shoutbox.send;
+        socketPlugins.shoutbox.send = (socket, data, callback) => {
+            console.log(socket.uid);
+            originSend(socket, data, callback); // call send from nodebb-plugin-shoutbox
+
+            if(socket.uid && data && data.message) {
+                user.getUsersWithFields([socket.uid], ['username', 'picture'], socket.uid, (err, userData) => {
+                    if(!err && userData && userData[0]) {
+                        let avatarUrl = userData[0].picture.startsWith("http") ? userData[0].picture : (nconf.get('url') + userData[0].picture);
+                        request.post(MFFDiscordBridge.discordWebHook, {
+                            json: {
+                                username: userData[0].username,
+                                avatar_url: avatarUrl,
+                                content: data.message
+                            }
+                        }, (error, response, body) => {
+                                if (error) {
+                                    console.log(error);
+                                }
+                            }
+                        );
+                    }
+                });
+            }
+        };
+
+        /*
+        socketIndex.server.sockets.on('connection', socket => {
+            console.log(socket);
+            socket.on("plugins.shoutbox.send", data => {
+                console.log("test");
+            });
+        });*/
 
         callback();
     },
@@ -115,6 +155,33 @@ function getTutorial(req, res) {
 
 function getSolvedThread(req, res) {
     res.status(200).json({msg: "Not implemented for now"});
+}
+
+function sendShout(req, res) {
+    if(req.body.username && req.body.message) {
+        user.getUidByUsername(req.body.username, (err, userid) => {
+            if (err) {
+                console.error(`Couldn't find user with name :${req.body.username}, err: ${err}`);
+                return res.status(500).json({error: "Couldn't get id of this user"});
+            }
+            if (userid > 0) {
+                shouts.addShout(userid, req.body.message, function(err, shout) {
+                    if (err) {
+                        return res.status(500).json({error: "Failed to send shout"});
+                    } 
+                    shout.fromBot = true;
+                    socketIndex.server.sockets.emit('event:shoutbox.receive', shout);
+                    return res.json({success: "true"});
+                });
+            }
+            else {
+                res.status(200).json({error: "User not found"});
+            }
+        });
+    }
+    else {
+        res.status(400).json({error: "Missing arguments"});
+    }
 }
 
 function renderAdmin(req, res) {

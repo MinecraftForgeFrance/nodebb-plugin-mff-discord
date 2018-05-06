@@ -15,10 +15,10 @@
                         </div>
                         <div class="col-lg-6 col-xs-12">
                             <div class="form-group">
-                                <label for="discordWebHook">
-                                    Discord webhool url (keep it secret)
+                                <label for="webhook">
+                                    Discord webhook url (keep it secret)
                                 </label>
-                                <input class="form-control" placeholder="https://discordapp.com/api/webhooks/..." type="text" name="discordWebHook" id="discordWebHook" />
+                                <input class="form-control" placeholder="https://discordapp.com/api/webhooks/..." type="text" name="webhook" id="webhook" />
                             </div>
                         </div>
                     </div>
