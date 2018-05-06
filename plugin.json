@@ -4,8 +4,12 @@
     "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord",
     "library": "./index.js",
     "templates": "./static/templates",
+    "acpScripts": [
+        "static/js/admin.js"
+    ],
     "hooks": [
         { "hook": "static:app.load", "method": "init" },
-        { "hook": "filter:config.get", "method": "appendConfig" }
+        { "hook": "filter:config.get", "method": "appendConfig" },
+        { "hook": "filter:admin.header.build", "method": "addToAdminNav" }
     ]
 }

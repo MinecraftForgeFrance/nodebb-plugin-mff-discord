@@ -44,6 +44,14 @@ const MFFDiscordBridge = {
             webhook: MFFDiscordBridge.discordWebHook,
         };
         callback(null, config);
+    },
+    addToAdminNav(header, callback) {
+        header.plugins.push({
+            route: '/plugins/mff-discord',
+            name: 'MFF Discord bridge',
+        });
+
+        callback(null, header);
     }
 };
 
