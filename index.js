@@ -8,6 +8,7 @@ const request = module.parent.require('request');
 const nconf = require('nconf');
 const search = module.parent.require("./search");
 const topics = module.parent.require('./topics');
+const messaging = module.parent.require('./messaging');
 
 const MFFDiscordBridge = {
     token: "changeme",
@@ -109,11 +110,11 @@ function checkToken(req, res, next) {
 
 function generateAndSendCode(req, res) {
     if (req.body.username) {
-        user.getUidByUsername(req.body.username, (err, result) => {
+        user.getUidByUsername(req.body.username, (err, userid) => {
             if (!err) {
-                if (result > 1) {
+                if (userid > 1) {
                     let randomNumber = randomizeNumber();
-                    socketModule.chats.newRoom({uid: 1}, {touid: result}, (err2, roomId) => {
+                    getOrCreateChatRoom(socketModule.chats, 1, userid, (err2, roomId) => {
                         if (!err2) {
                             socketModule.chats.send({uid: 1}, {
                                 roomId: roomId,
@@ -150,12 +151,35 @@ function generateAndSendCode(req, res) {
     }
 }
 
+function getOrCreateChatRoom(chats, botid, userid, callback) {
+    messaging.getRecentChats(userid, userid, 0, 19, (err, result) => {
+        if(err) {
+            callback(err, null);
+        }
+        else {
+            for(room of result.rooms) {
+                if(room.owner == botid) {
+                    return callback(null, room.roomId);
+                }
+            }
+            chats.newRoom({uid: botid}, {touid: userid}, (err2, roomId) => {
+                if(err2) {
+                    callback(err2, null);
+                }
+                else {
+                    callback(null, roomId);
+                }
+            });
+        }
+    });
+}
+
 function getTutorial(req, res) {
     return searchInPost(req, res, [2]);
 }
 
 function getSolvedThread(req, res) {
-    return searchInPost(req, res, [3]);
+    return searchInPost(req, res, [5]);
 }
 
 function searchInPost(req, res, categories) {
@@ -235,7 +259,7 @@ function sendShout(req, res) {
                 shouts.addShout(userid, req.body.message, function(err, shout) {
                     if (err) {
                         return res.status(500).json({error: "Failed to send shout"});
-                    } 
+                    }
                     shout.fromBot = true;
                     socketIndex.server.sockets.emit('event:shoutbox.receive', shout);
                     return res.json({success: "true"});
