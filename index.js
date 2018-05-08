@@ -1,11 +1,13 @@
 const user = module.parent.require("./user");
 const socketModule = module.parent.require("./socket.io/modules");
-const socketIndex = module.parent.require('./socket.io/index')
+const socketIndex = module.parent.require('./socket.io/index');
 const socketPlugins = module.parent.require('./socket.io/plugins');
 const meta = module.parent.require('./meta');
 const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
 const request = module.parent.require('request');
 const nconf = require('nconf');
+const search = module.parent.require("./search");
+const topics = module.parent.require('./topics');
 
 const MFFDiscordBridge = {
     token: "changeme",
@@ -27,7 +29,7 @@ const MFFDiscordBridge = {
 
         meta.settings.get('mffdiscordbridge', (err, options) => {
             if (err) {
-                winston.warn(`[plugin/mffdiscordbridge] Unable to retrieve settings, will keep defaults: ${err.message}`);
+                console.log(`[plugin/mffdiscordbridge] Unable to retrieve settings, will keep defaults: ${err.message}`);
             }
             else {
                 // load value from config if exist, keep default otherwise
@@ -43,7 +45,6 @@ const MFFDiscordBridge = {
 
         let originSend = socketPlugins.shoutbox.send;
         socketPlugins.shoutbox.send = (socket, data, callback) => {
-            console.log(socket.uid);
             originSend(socket, data, callback); // call send from nodebb-plugin-shoutbox
 
             if(socket.uid && data && data.message) {
@@ -117,7 +118,7 @@ function generateAndSendCode(req, res) {
                             socketModule.chats.send({uid: 1}, {
                                 roomId: roomId,
                                 message: `Voici votre token d'accès au Discord de Minecraft Forge France : ${randomNumber}.
-                                Si vous n'avez pas fait de demande de code d'accès, merci de le signalez à l'équipe de Minecraft Forge France.`
+                                Si vous n'avez pas fait de demande de code d'accès, veuillez ignorer ce message.`
                             }, (err3, messageData) => {
                                 if (err3) {
                                     console.error(`Couldn't send message: ${err3}`);
@@ -150,11 +151,77 @@ function generateAndSendCode(req, res) {
 }
 
 function getTutorial(req, res) {
-    res.status(200).json({msg: "Not implemented for now"});
+    return searchInPost(req, res, [2]);
 }
 
 function getSolvedThread(req, res) {
-    res.status(200).json({msg: "Not implemented for now"});
+    return searchInPost(req, res, [3]);
+}
+
+function searchInPost(req, res, categories) {
+    var data = {
+		query: req.query.term,
+		searchIn: 'titles',
+		matchWords: 'all',
+		categories: categories,
+		searchChildren: true,
+		hasTags: req.query.hasTags,
+		sortBy: '',
+		qs: req.query
+	};
+
+	search.search(data, function(err, results) {
+		if (err) {
+            console.log(err);
+			return res.status(500).json({error: "Error while performing the search"});
+        }
+        let tids = results.posts.map(post => post && post.tid);
+        topics.getTopicsTags(tids, (err2, postTags) => {
+            if(err2) {
+                console.log(err2);
+                return res.status(500).json({error: "Error while getting topic tags"});
+            }
+
+            if(results.posts.length == 0) {
+                return res.status(200).json({message: "No result"});
+            }
+
+            let response = {};
+            if(!req.query.hasTags) { // only add none tag if there is not tags filter in the request
+                response['none'] = [];
+            }
+            for(tags of postTags) {
+                for(tag of tags) {
+                    if(isTagInFilter(tag, req.query.hasTags)) {
+                        response[tag] = [];
+                    }
+                }
+            }
+            
+            for(let i in results.posts) {
+                let post = {
+                    title: results.posts[i].topic.title,
+                    url: nconf.get('url') + 'topic/' + results.posts[i].topic.slug
+                };
+                if(postTags[i].length == 0) {
+                    response['none'].push(post);
+                }
+                else {
+                    for(tag of postTags[i]) {
+                        // avoid duplicate if topic has multiple tags
+                        if(isTagInFilter(tag, req.query.hasTags)) {
+                            response[tag].push(post);
+                        }
+                    }
+                }
+            }
+            return res.status(200).json(response);
+        });
+    });
+}
+
+function isTagInFilter(tag, tagsFilter) {
+    return !tagsFilter || (tagsFilter && tagsFilter.indexOf(tag) >= 0);
 }
 
 function sendShout(req, res) {
