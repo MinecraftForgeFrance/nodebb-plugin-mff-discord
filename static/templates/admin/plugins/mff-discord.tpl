@@ -12,13 +12,27 @@
                                 </label>
                                 <input class="form-control" type="text" name="token" id="token" />
                             </div>
-                        </div>
-                        <div class="col-lg-6 col-xs-12">
+
                             <div class="form-group">
                                 <label for="webhook">
                                     Discord webhook url (keep it secret)
                                 </label>
                                 <input class="form-control" placeholder="https://discordapp.com/api/webhooks/..." type="text" name="webhook" id="webhook" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-xs-12">
+                            <div class="form-group">
+                                <label for="webhook">
+                                    Tutorial category id
+                                </label>
+                                <input class="form-control" type="number" name="tutocatid" id="tutocatid" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="webhook">
+                                    Support category id
+                                </label>
+                                <input class="form-control" type="number" name="supportcatid" id="supportcatid" />
                             </div>
                         </div>
                     </div>

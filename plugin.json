@@ -9,7 +9,6 @@
     ],
     "hooks": [
         { "hook": "static:app.load", "method": "init", "priority": 11 },
-        { "hook": "filter:config.get", "method": "appendConfig" },
         { "hook": "filter:admin.header.build", "method": "addToAdminNav" }
     ]
 }

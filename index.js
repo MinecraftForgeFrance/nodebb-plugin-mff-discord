@@ -13,6 +13,8 @@ const messaging = module.parent.require('./messaging');
 const MFFDiscordBridge = {
     token: "changeme",
     discordWebHook: "changeme",
+    tutorialCategoryId: 0,
+    supportCategoryId: 0,
     // init the plugin
     init(params, callback) {
         let app = params.router;
@@ -40,6 +42,14 @@ const MFFDiscordBridge = {
 
                 if (options.hasOwnProperty("webhook")) {
                     MFFDiscordBridge.discordWebHook = options["webhook"];
+                }
+
+                if (options.hasOwnProperty("tutocatid")) {
+                    MFFDiscordBridge.tutorialCategoryId = options["tutocatid"];
+                }
+
+                if (options.hasOwnProperty("supportcatid")) {
+                    MFFDiscordBridge.supportCategoryId = options["supportcatid"];
                 }
             }
         });
@@ -78,14 +88,6 @@ const MFFDiscordBridge = {
         });*/
 
         callback();
-    },
-    // append mffdiscordbridge config to nodebb
-    appendConfig(config, callback) {
-        config.mffdiscordbridge = {
-            token: MFFDiscordBridge.token,
-            webhook: MFFDiscordBridge.discordWebHook,
-        };
-        callback(null, config);
     },
     addToAdminNav(header, callback) {
         header.plugins.push({
@@ -175,11 +177,11 @@ function getOrCreateChatRoom(chats, botid, userid, callback) {
 }
 
 function getTutorial(req, res) {
-    return searchInPost(req, res, [2]);
+    return searchInPost(req, res, [MFFDiscordBridge.tutorialCategoryId]);
 }
 
 function getSolvedThread(req, res) {
-    return searchInPost(req, res, [5]);
+    return searchInPost(req, res, [MFFDiscordBridge.supportCategoryId]);
 }
 
 function searchInPost(req, res, categories) {
