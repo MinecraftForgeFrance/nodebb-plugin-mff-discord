@@ -22,14 +22,14 @@
                         </div>
                         <div class="col-lg-6 col-xs-12">
                             <div class="form-group">
-                                <label for="webhook">
+                                <label for="tutocatid">
                                     Tutorial category id
                                 </label>
                                 <input class="form-control" type="number" name="tutocatid" id="tutocatid" />
                             </div>
 
                             <div class="form-group">
-                                <label for="webhook">
+                                <label for="supportcatid">
                                     Support category id
                                 </label>
                                 <input class="form-control" type="number" name="supportcatid" id="supportcatid" />
