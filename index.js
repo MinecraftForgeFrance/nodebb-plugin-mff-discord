@@ -227,7 +227,7 @@ function searchInPost(req, res, categories) {
             for(let i in results.posts) {
                 let post = {
                     title: results.posts[i].topic.title,
-                    url: nconf.get('url') + 'topic/' + results.posts[i].topic.slug
+                    url: nconf.get('url') + '/topic/' + results.posts[i].topic.slug
                 };
                 if(postTags[i].length == 0) {
                     response['none'].push(post);
