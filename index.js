@@ -66,7 +66,7 @@ const MFFDiscordBridge = {
                             json: {
                                 username: userData[0].username,
                                 avatar_url: avatarUrl,
-                                content: data.message
+                                content: data.message.replace(/\@(here|everyone)/gi, "$1")
                             }
                         }, (error, response, body) => {
                                 if (error) {
