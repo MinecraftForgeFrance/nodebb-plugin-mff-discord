@@ -1,14 +1,14 @@
-const user = module.parent.require("./user");
-const socketModule = module.parent.require("./socket.io/modules");
-const socketIndex = module.parent.require('./socket.io/index');
-const socketPlugins = module.parent.require('./socket.io/plugins');
-const meta = module.parent.require('./meta');
+const user = require.main.require("./src/user");
+const socketModule = require.main.require("./src/socket.io/modules");
+const socketIndex = require.main.require('./src/socket.io/index');
+const socketPlugins = require.main.require('./src/socket.io/plugins');
+const meta = require.main.require('./src/meta');
 const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
-const request = module.parent.require('request');
+const request = require.main.require('request');
 const nconf = require('nconf');
-const search = module.parent.require("./search");
-const topics = module.parent.require('./topics');
-const messaging = module.parent.require('./messaging');
+const search = require.main.require("./src/search");
+const topics = require.main.require('./src/topics');
+const messaging = require.main.require('./src/messaging');
 
 const MFFDiscordBridge = {
     token: "changeme",
@@ -223,7 +223,7 @@ function searchInPost(req, res, categories) {
                     }
                 }
             }
-            
+
             for(let i in results.posts) {
                 let post = {
                     title: results.posts[i].topic.title,

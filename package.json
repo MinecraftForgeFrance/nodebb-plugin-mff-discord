@@ -1,27 +1,30 @@
 {
-    "name": "nodebb-plugin-mff-discord",
-    "version": "1.0.0",
-    "description": "A NodeBB plugin to connect the MFF forum with our Discord. Designed for our needs.",
-    "main": "index.js",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord.git"
-    },
-    "author": "Superloup10 <Superloup10@gmail.com>",
-    "contributors": [
-        {
-            "name": "robin4002",
-            "email": "robin4002@gmail.com"
-        }
-    ],
-    "license": "BSD-2-Clause",
-    "nbbpm": {
-        "compatibility": "^1.8.0"
-    },
-    "dependencies": {},
-    "devDependencies": {},
-    "bugs": {
-        "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord/issues"
-    },
-    "homepage": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord#readme"
+  "name": "nodebb-plugin-mff-discord",
+  "version": "1.0.0",
+  "description": "A NodeBB plugin to connect the MFF forum with our Discord. Designed for our needs.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord.git"
+  },
+  "author": "Superloup10 <Superloup10@gmail.com>",
+  "contributors": [
+    {
+      "name": "robin4002",
+      "email": "robin4002@gmail.com"
+    }
+  ],
+  "license": "BSD-2-Clause",
+  "nbbpm": {
+    "compatibility": "^1.11.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "peerDependencies": {
+    "nodebb-plugin-shoutbox": "^0.3.4"
+  },
+  "bugs": {
+    "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord/issues"
+  },
+  "homepage": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord#readme"
 }
