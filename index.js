@@ -128,7 +128,10 @@ function generateAndSendCode(req, res) {
                                     res.status(500).json({error: "Failed to send a private message"});
                                 }
                                 else {
-                                    res.json({result: randomNumber});
+                                    res.json({
+                                        result: randomNumber,
+                                        userId: userid,
+                                    });
                                 }
                             });
                         }
@@ -251,14 +254,24 @@ function isTagInFilter(tag, tagsFilter) {
 }
 
 function sendShout(req, res) {
-    if(req.body.username && req.body.message) {
-        user.getUidByUsername(req.body.username, (err, userid) => {
-            if (err) {
-                console.error(`Couldn't find user with name :${req.body.username}, err: ${err}`);
-                return res.status(500).json({error: "Couldn't get id of this user"});
-            }
-            if (userid > 0) {
-                shouts.addShout(userid, req.body.message, function(err, shout) {
+    if(req.body.senderId && req.body.message && req.body.mentions) {
+        user.exists(req.body.senderId).then(() => {
+            user.getUsernamesByUids(req.body.mentions.map(mention => mention.id), (err, usernames) => {
+                if(err) {
+                    console.log(`Couldn't find the name for an user : ${err}`);
+                    return res.status(500).json({error: "Couldn't retrieve an user from given id"});
+                }
+                if(usernames.indexOf(0) !== -1) {
+                    return res.status(200).json({error: "User not found"});
+                }
+
+                // Re-create message with mentions matching forum names
+                let message = req.body.message;
+                for(let i = 0; i < req.body.mentions.length; i++) {
+                    message = message.substring(0, req.body.mentions[i].index) + `@${username[i]}` + message.substring(req.body.mentions[i].index);
+                }
+
+                shouts.addShout(req.body.senderId, message, function(err, shout) {
                     if (err) {
                         return res.status(500).json({error: "Failed to send shout"});
                     }
@@ -266,11 +279,8 @@ function sendShout(req, res) {
                     socketIndex.server.sockets.emit('event:shoutbox.receive', shout);
                     return res.json({success: "true"});
                 });
-            }
-            else {
-                res.status(200).json({error: "User not found"});
-            }
-        });
+            })
+        }).catch(() => res.status(500).json({error: "User not found"}));
     }
     else {
         res.status(400).json({error: "Missing arguments"});
