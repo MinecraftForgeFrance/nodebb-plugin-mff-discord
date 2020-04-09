@@ -22,8 +22,8 @@ const MFFDiscordBridge = {
 
         // discord bridge api
         app.post("/discordapi/register", checkToken, generateAndSendCode);
-        app.get("/discordapi/tutorial", checkToken, getTutorial);
-        app.get("/discordapi/solvedthread", checkToken, getSolvedThread);
+        app.get("/discordapi/tutorial", getTutorial);
+        app.get("/discordapi/solvedthread", getSolvedThread);
         app.post("/discordapi/sendshout", checkToken, sendShout);
 
         // admin panel
