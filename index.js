@@ -254,7 +254,7 @@ function sendShout(req, res) {
 
                 let index = 0;
                 const message = req.body.message.replace(/<@![0-9]+>/g, function () {
-                    return '@' + req.body.mentions[index++];
+                    return '@' + usernames[index++];
                 });
 
                 shouts.addShout(req.body.senderId, message, function (err, shout) {
