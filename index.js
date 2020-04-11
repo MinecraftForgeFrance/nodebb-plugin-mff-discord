@@ -243,7 +243,7 @@ function isTagInFilter(tag, tagsFilter) {
 function sendShout(req, res) {
     if (req.body.senderId && req.body.message && req.body.mentions) {
         user.exists(req.body.senderId, (isExist) => {
-            user.getUsernamesByUids(req.body.mentions.map(mention => mention.id), (err, usernames) => {
+            user.getUsernamesByUids(req.body.mentions, (err, usernames) => {
                 if (err) {
                     console.error(`Couldn't find the name for an user : ${err}`);
                     return res.status(500).json({error: "Couldn't retrieve an user from given id"});
@@ -252,11 +252,10 @@ function sendShout(req, res) {
                     return res.status(500).json({error: "User not found"});
                 }
 
-                // Re-create message with mentions matching forum names
-                let message = req.body.message;
-                for (let i = 0; i < req.body.mentions.length; i++) {
-                    message = message.substring(0, req.body.mentions[i].index) + `@${usernames[i]}` + message.substring(req.body.mentions[i].index);
-                }
+                let index = 0;
+                const message = req.body.message.replace(/<@![0-9]+>/g, function () {
+                    return '@' + req.body.mentions[index++];
+                });
 
                 shouts.addShout(req.body.senderId, message, function (err, shout) {
                     if (err) {
