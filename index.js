@@ -112,11 +112,11 @@ function checkToken(req, res, next) {
 
 function generateAndSendCode(req, res) {
     if (req.body.username) {
-        user.getUidByUsername(req.body.username, (err, userid) => {
+        user.getUidByUsername(req.body.username, (err, userId) => {
             if (!err) {
-                if (userid > 1) {
+                if (userId > 1) {
                     let randomNumber = randomizeNumber();
-                    getOrCreateChatRoom(socketModule.chats, 1, userid, (err2, roomId) => {
+                    getOrCreateChatRoom(socketModule.chats, 1, userId, (err2, roomId) => {
                         if (!err2) {
                             socketModule.chats.send({uid: 1}, {
                                 roomId: roomId,
@@ -128,7 +128,7 @@ function generateAndSendCode(req, res) {
                                     res.status(500).json({error: "Failed to send a private message"});
                                 }
                                 else {
-                                    res.json({result: randomNumber});
+                                    res.json({ result: randomNumber, userId});
                                 }
                             });
                         }
