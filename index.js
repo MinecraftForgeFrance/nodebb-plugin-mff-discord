@@ -33,8 +33,7 @@ const MFFDiscordBridge = {
         meta.settings.get('mffdiscordbridge', (err, options) => {
             if (err) {
                 console.log(`[plugin/mffdiscordbridge] Unable to retrieve settings, will keep defaults: ${err.message}`);
-            }
-            else {
+            } else {
                 // load value from config if exist, keep default otherwise
                 if (options.hasOwnProperty("token")) {
                     MFFDiscordBridge.token = options["token"];
@@ -58,9 +57,9 @@ const MFFDiscordBridge = {
         socketPlugins.shoutbox.send = (socket, data, callback) => {
             originSend(socket, data, callback); // call send from nodebb-plugin-shoutbox
 
-            if(socket.uid && data && data.message) {
+            if (socket.uid && data && data.message) {
                 user.getUsersWithFields([socket.uid], ['username', 'picture'], socket.uid, (err, userData) => {
-                    if(!err && userData && userData[0]) {
+                    if (!err && userData && userData[0]) {
                         let avatarUrl = userData[0].picture.startsWith("http") ? userData[0].picture : (nconf.get('url') + userData[0].picture);
                         request.post(MFFDiscordBridge.discordWebHook, {
                             json: {
@@ -69,11 +68,10 @@ const MFFDiscordBridge = {
                                 content: data.message.replace(/\@(here|everyone)/gi, "$1")
                             }
                         }, (error, response, body) => {
-                                if (error) {
-                                    console.log(error);
-                                }
+                            if (error) {
+                                console.log(error);
                             }
-                        );
+                        });
                     }
                 });
             }
@@ -104,8 +102,7 @@ function checkToken(req, res, next) {
     let token = req.body.token || req.query.token || "";
     if (token === MFFDiscordBridge.token) {
         next();
-    }
-    else {
+    } else {
         res.status(403).json({error: "Invalid token!"});
     }
 }
@@ -128,47 +125,41 @@ function generateAndSendCode(req, res) {
                                     res.status(500).json({error: "Failed to send a private message"});
                                 }
                                 else {
-                                    res.json({ result: randomNumber, userId});
+                                    res.json({ result: randomNumber, userId });
                                 }
                             });
-                        }
-                        else {
+                        } else {
                             console.error(`Couldn't create chat room: ${err2}`);
                             res.status(500).json({error: "Failed to create chat room"});
                         }
                     });
-                }
-                else {
+                } else {
                     res.status(200).json({error: "User not found"});
                 }
-            }
-            else {
+            } else {
                 console.error(`Couldn't find user with name :${req.body.username}, err: ${err}`);
                 res.status(500).json({error: "Couldn't get id of this user"});
             }
         });
-    }
-    else {
+    } else {
         res.status(400).json({error: "Missing arguments"});
     }
 }
 
 function getOrCreateChatRoom(chats, botid, userid, callback) {
     messaging.getRecentChats(userid, userid, 0, 19, (err, result) => {
-        if(err) {
+        if (err) {
             callback(err, null);
-        }
-        else {
-            for(room of result.rooms) {
-                if(room.owner == botid) {
+        } else {
+            for (room of result.rooms) {
+                if (room.owner === botid) {
                     return callback(null, room.roomId);
                 }
             }
             chats.newRoom({uid: botid}, {touid: userid}, (err2, roomId) => {
-                if(err2) {
+                if (err2) {
                     callback(err2, null);
-                }
-                else {
+                } else {
                     callback(null, roomId);
                 }
             });
@@ -185,57 +176,56 @@ function getSolvedThread(req, res) {
 }
 
 function searchInPost(req, res, categories) {
-    var data = {
-		query: req.query.term,
-		searchIn: 'titles',
-		matchWords: 'all',
-		categories: categories,
-		searchChildren: true,
-		hasTags: req.query.hasTags,
-		sortBy: '',
-		qs: req.query
-	};
+    const data = {
+        query: req.query.term,
+        searchIn: 'titles',
+        matchWords: 'all',
+        categories: categories,
+        searchChildren: true,
+        hasTags: req.query.hasTags,
+        sortBy: '',
+        qs: req.query
+    };
 
-	search.search(data, function(err, results) {
-		if (err) {
+    search.search(data, function (err, results) {
+        if (err) {
             console.log(err);
-			return res.status(500).json({error: "Error while performing the search"});
+            return res.status(500).json({error: "Error while performing the search"});
         }
         let tids = results.posts.map(post => post && post.tid);
         topics.getTopicsTags(tids, (err2, postTags) => {
-            if(err2) {
+            if (err2) {
                 console.log(err2);
                 return res.status(500).json({error: "Error while getting topic tags"});
             }
 
-            if(results.posts.length == 0) {
+            if (results.posts.length === 0) {
                 return res.status(200).json({message: "No result"});
             }
 
             let response = {};
-            if(!req.query.hasTags) { // only add none tag if there is not tags filter in the request
+            if (!req.query.hasTags) { // only add none tag if there is not tags filter in the request
                 response['none'] = [];
             }
-            for(tags of postTags) {
-                for(tag of tags) {
-                    if(isTagInFilter(tag, req.query.hasTags)) {
+            for (tags of postTags) {
+                for (tag of tags) {
+                    if (isTagInFilter(tag, req.query.hasTags)) {
                         response[tag] = [];
                     }
                 }
             }
 
-            for(let i in results.posts) {
+            for (let i in results.posts) {
                 let post = {
                     title: results.posts[i].topic.title,
                     url: nconf.get('url') + '/topic/' + results.posts[i].topic.slug
                 };
-                if(postTags[i].length == 0) {
+                if (postTags[i].length === 0) {
                     response['none'].push(post);
-                }
-                else {
-                    for(tag of postTags[i]) {
+                } else {
+                    for (tag of postTags[i]) {
                         // avoid duplicate if topic has multiple tags
-                        if(isTagInFilter(tag, req.query.hasTags)) {
+                        if (isTagInFilter(tag, req.query.hasTags)) {
                             response[tag].push(post);
                         }
                     }
@@ -251,28 +241,36 @@ function isTagInFilter(tag, tagsFilter) {
 }
 
 function sendShout(req, res) {
-    if(req.body.username && req.body.message) {
-        user.getUidByUsername(req.body.username, (err, userid) => {
-            if (err) {
-                console.error(`Couldn't find user with name :${req.body.username}, err: ${err}`);
-                return res.status(500).json({error: "Couldn't get id of this user"});
-            }
-            if (userid > 0) {
-                shouts.addShout(userid, req.body.message, function(err, shout) {
+    if (req.body.senderId && req.body.message && req.body.mentions) {
+        user.exists(req.body.senderId, (isExist) => {
+            user.getUsernamesByUids(req.body.mentions.map(mention => mention.id), (err, usernames) => {
+                if (err) {
+                    console.error(`Couldn't find the name for an user : ${err}`);
+                    return res.status(500).json({error: "Couldn't retrieve an user from given id"});
+                }
+                if (usernames.indexOf(0) !== -1) {
+                    return res.status(500).json({error: "User not found"});
+                }
+
+                // Re-create message with mentions matching forum names
+                let message = req.body.message;
+                for (let i = 0; i < req.body.mentions.length; i++) {
+                    message = message.substring(0, req.body.mentions[i].index) + `@${usernames[i]}` + message.substring(req.body.mentions[i].index);
+                }
+
+                shouts.addShout(req.body.senderId, message, function (err, shout) {
                     if (err) {
                         return res.status(500).json({error: "Failed to send shout"});
                     }
                     shout.fromBot = true;
                     socketIndex.server.sockets.emit('event:shoutbox.receive', shout);
-                    return res.json({success: "true"});
+                    return res.status(200).json({success: "true"});
                 });
-            }
-            else {
-                res.status(200).json({error: "User not found"});
-            }
+            });
+            if (isExist)
+                return res.status(500).json({error: "User not found"});
         });
-    }
-    else {
+    } else {
         res.status(400).json({error: "Missing arguments"});
     }
 }
