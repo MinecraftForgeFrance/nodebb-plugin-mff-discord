@@ -1,10 +1,10 @@
 const user = require.main.require("./src/user");
 const socketModule = require.main.require("./src/socket.io/modules");
 const socketIndex = require.main.require('./src/socket.io/index');
-const socketPlugins = require.main.require('./src/socket.io/plugins');
+//const socketPlugins = require.main.require('./src/socket.io/plugins');
 const meta = require.main.require('./src/meta');
 const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
-const request = require.main.require('request');
+//const request = require.main.require('request');
 const nconf = require('nconf');
 const search = require.main.require("./src/search");
 const topics = require.main.require('./src/topics');
@@ -24,7 +24,7 @@ const MFFDiscordBridge = {
         app.post("/discordapi/register", checkToken, generateAndSendCode);
         app.get("/discordapi/tutorial", getTutorial);
         app.get("/discordapi/solvedthread", getSolvedThread);
-        app.post("/discordapi/sendshout", checkToken, sendShout);
+        //app.post("/discordapi/sendshout", checkToken, sendShout);
 
         // admin panel
         app.get('/admin/plugins/mff-discord', middleware.admin.buildHeader, renderAdmin);
@@ -53,37 +53,29 @@ const MFFDiscordBridge = {
             }
         });
 
-        let originSend = socketPlugins.shoutbox.send;
-        socketPlugins.shoutbox.send = (socket, data, callback) => {
-            originSend(socket, data, callback); // call send from nodebb-plugin-shoutbox
+        // let originSend = socketPlugins.shoutbox.send;
+        // socketPlugins.shoutbox.send = (socket, data, callback) => {
+        //     originSend(socket, data, callback); // call send from nodebb-plugin-shoutbox
 
-            if (socket.uid && data && data.message) {
-                user.getUsersWithFields([socket.uid], ['username', 'picture'], socket.uid, (err, userData) => {
-                    if (!err && userData && userData[0]) {
-                        let avatarUrl = userData[0].picture.startsWith("http") ? userData[0].picture : (nconf.get('url') + userData[0].picture);
-                        request.post(MFFDiscordBridge.discordWebHook, {
-                            json: {
-                                username: userData[0].username,
-                                avatar_url: avatarUrl,
-                                content: data.message.replace(/\@(here|everyone)/gi, "$1")
-                            }
-                        }, (error, response, body) => {
-                            if (error) {
-                                console.log(error);
-                            }
-                        });
-                    }
-                });
-            }
-        };
-
-        /*
-        socketIndex.server.sockets.on('connection', socket => {
-            console.log(socket);
-            socket.on("plugins.shoutbox.send", data => {
-                console.log("test");
-            });
-        });*/
+        //     if (socket.uid && data && data.message) {
+        //         user.getUsersWithFields([socket.uid], ['username', 'picture'], socket.uid, (err, userData) => {
+        //             if (!err && userData && userData[0]) {
+        //                 let avatarUrl = userData[0].picture.startsWith("http") ? userData[0].picture : (nconf.get('url') + userData[0].picture);
+        //                 request.post(MFFDiscordBridge.discordWebHook, {
+        //                     json: {
+        //                         username: userData[0].username,
+        //                         avatar_url: avatarUrl,
+        //                         content: data.message.replace(/\@(here|everyone)/gi, "$1")
+        //                     }
+        //                 }, (error, response, body) => {
+        //                     if (error) {
+        //                         console.log(error);
+        //                     }
+        //                 });
+        //             }
+        //         });
+        //     }
+        // };
 
         callback();
     },
