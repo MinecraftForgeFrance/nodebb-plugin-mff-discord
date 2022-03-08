@@ -3,7 +3,7 @@ const socketModule = require.main.require("./src/socket.io/modules");
 const socketIndex = require.main.require('./src/socket.io/index');
 //const socketPlugins = require.main.require('./src/socket.io/plugins');
 const meta = require.main.require('./src/meta');
-const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
+//const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
 //const request = require.main.require('request');
 const nconf = require('nconf');
 const search = require.main.require("./src/search");
@@ -232,39 +232,39 @@ function isTagInFilter(tag, tagsFilter) {
     return !tagsFilter || (tagsFilter && tagsFilter.indexOf(tag) >= 0);
 }
 
-function sendShout(req, res) {
-    if (req.body.senderId && req.body.message && req.body.mentions) {
-        user.exists(req.body.senderId, (isExist) => {
-            user.getUsernamesByUids(req.body.mentions, (err, usernames) => {
-                if (err) {
-                    console.error(`Couldn't find the name for an user : ${err}`);
-                    return res.status(500).json({error: "Couldn't retrieve an user from given id"});
-                }
-                if (usernames.indexOf(0) !== -1) {
-                    return res.status(500).json({error: "User not found"});
-                }
+// function sendShout(req, res) {
+//     if (req.body.senderId && req.body.message && req.body.mentions) {
+//         user.exists(req.body.senderId, (isExist) => {
+//             user.getUsernamesByUids(req.body.mentions, (err, usernames) => {
+//                 if (err) {
+//                     console.error(`Couldn't find the name for an user : ${err}`);
+//                     return res.status(500).json({error: "Couldn't retrieve an user from given id"});
+//                 }
+//                 if (usernames.indexOf(0) !== -1) {
+//                     return res.status(500).json({error: "User not found"});
+//                 }
 
-                let index = 0;
-                const message = req.body.message.replace(/<@![0-9]+>/g, function () {
-                    return '@' + usernames[index++];
-                });
+//                 let index = 0;
+//                 const message = req.body.message.replace(/<@![0-9]+>/g, function () {
+//                     return '@' + usernames[index++];
+//                 });
 
-                shouts.addShout(req.body.senderId, message, function (err, shout) {
-                    if (err) {
-                        return res.status(500).json({error: "Failed to send shout"});
-                    }
-                    shout.fromBot = true;
-                    socketIndex.server.sockets.emit('event:shoutbox.receive', shout);
-                    return res.status(200).json({success: "true"});
-                });
-            });
-            if (isExist)
-                return res.status(500).json({error: "User not found"});
-        });
-    } else {
-        res.status(400).json({error: "Missing arguments"});
-    }
-}
+//                 shouts.addShout(req.body.senderId, message, function (err, shout) {
+//                     if (err) {
+//                         return res.status(500).json({error: "Failed to send shout"});
+//                     }
+//                     shout.fromBot = true;
+//                     socketIndex.server.sockets.emit('event:shoutbox.receive', shout);
+//                     return res.status(200).json({success: "true"});
+//                 });
+//             });
+//             if (isExist)
+//                 return res.status(500).json({error: "User not found"});
+//         });
+//     } else {
+//         res.status(400).json({error: "Missing arguments"});
+//     }
+// }
 
 function renderAdmin(req, res) {
     res.render('admin/plugins/mff-discord');
