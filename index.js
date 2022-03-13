@@ -1,14 +1,15 @@
 const user = require.main.require("./src/user");
-const socketModule = require.main.require("./src/socket.io/modules");
-const socketIndex = require.main.require('./src/socket.io/index');
 //const socketPlugins = require.main.require('./src/socket.io/plugins');
 const meta = require.main.require('./src/meta');
 //const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
 //const request = require.main.require('request');
-const nconf = require('nconf');
+const nconf = require.main.require('nconf');
+const api = require.main.require('./src/api');
 const search = require.main.require("./src/search");
 const topics = require.main.require('./src/topics');
 const messaging = require.main.require('./src/messaging');
+
+const MFF_USER_UID = 1;
 
 const MFFDiscordBridge = {
     token: "changeme",
@@ -16,7 +17,7 @@ const MFFDiscordBridge = {
     tutorialCategoryId: 0,
     supportCategoryId: 0,
     // init the plugin
-    init(params, callback) {
+    async init(params) {
         let app = params.router;
         let middleware = params.middleware;
 
@@ -30,28 +31,27 @@ const MFFDiscordBridge = {
         app.get('/admin/plugins/mff-discord', middleware.admin.buildHeader, renderAdmin);
         app.get('/api/admin/plugins/mff-discord', renderAdmin);
 
-        meta.settings.get('mffdiscordbridge', (err, options) => {
-            if (err) {
-                console.log(`[plugin/mffdiscordbridge] Unable to retrieve settings, will keep defaults: ${err.message}`);
-            } else {
-                // load value from config if exist, keep default otherwise
-                if (options.hasOwnProperty("token")) {
-                    MFFDiscordBridge.token = options["token"];
-                }
-
-                if (options.hasOwnProperty("webhook")) {
-                    MFFDiscordBridge.discordWebHook = options["webhook"];
-                }
-
-                if (options.hasOwnProperty("tutocatid")) {
-                    MFFDiscordBridge.tutorialCategoryId = options["tutocatid"];
-                }
-
-                if (options.hasOwnProperty("supportcatid")) {
-                    MFFDiscordBridge.supportCategoryId = options["supportcatid"];
-                }
+        try {
+            const options = await meta.settings.get('mffdiscordbridge');
+            if (options.hasOwnProperty("token")) {
+                MFFDiscordBridge.token = options["token"];
             }
-        });
+
+            if (options.hasOwnProperty("webhook")) {
+                MFFDiscordBridge.discordWebHook = options["webhook"];
+            }
+
+            if (options.hasOwnProperty("tutocatid")) {
+                MFFDiscordBridge.tutorialCategoryId = options["tutocatid"];
+            }
+
+            if (options.hasOwnProperty("supportcatid")) {
+                MFFDiscordBridge.supportCategoryId = options["supportcatid"];
+            }
+        }
+        catch (err) {
+            console.log(`[plugin/mffdiscordbridge] Unable to retrieve settings, will keep defaults: ${err.message}`);
+        }
 
         // let originSend = socketPlugins.shoutbox.send;
         // socketPlugins.shoutbox.send = (socket, data, callback) => {
@@ -76,16 +76,13 @@ const MFFDiscordBridge = {
         //         });
         //     }
         // };
-
-        callback();
     },
-    addToAdminNav(header, callback) {
+    async addToAdminNav(header) {
         header.plugins.push({
             route: '/plugins/mff-discord',
             name: 'MFF Discord bridge',
         });
-
-        callback(null, header);
+        return header;
     }
 };
 
@@ -99,64 +96,43 @@ function checkToken(req, res, next) {
     }
 }
 
-function generateAndSendCode(req, res) {
+async function generateAndSendCode(req, res) {
     if (req.body.username) {
-        user.getUidByUsername(req.body.username, (err, userId) => {
-            if (!err) {
-                if (userId > 1) {
-                    let randomNumber = randomizeNumber();
-                    getOrCreateChatRoom(socketModule.chats, 1, userId, (err2, roomId) => {
-                        if (!err2) {
-                            socketModule.chats.send({uid: 1}, {
-                                roomId: roomId,
-                                message: `Voici votre token d'accès au Discord de Minecraft Forge France : ${randomNumber}.
-                                Si vous n'avez pas fait de demande de code d'accès, veuillez ignorer ce message.`
-                            }, (err3, messageData) => {
-                                if (err3) {
-                                    console.error(`Couldn't send message: ${err3}`);
-                                    res.status(500).json({error: "Failed to send a private message"});
-                                }
-                                else {
-                                    res.json({ result: randomNumber, userId });
-                                }
-                            });
-                        } else {
-                            console.error(`Couldn't create chat room: ${err2}`);
-                            res.status(500).json({error: "Failed to create chat room"});
-                        }
-                    });
-                } else {
-                    res.status(200).json({error: "User not found"});
-                }
+        try  {
+            const userId = await user.getUidByUsername(req.body.username);
+            console.log(userId, req.body.username)
+            if (userId > 1) {
+                let randomNumber = randomizeNumber();
+
+                req.uid = MFF_USER_UID;
+                const roomId = await getOrCreateChatRoom(req, MFF_USER_UID, userId);
+                await api.chats.post(req, {
+                    roomId,
+                    message: `Voici votre token d'accès au Discord de Minecraft Forge France : ${randomNumber}.\nSi vous n'avez pas fait de demande de code d'accès, veuillez ignorer ce message.`
+                });
+                res.json({ result: randomNumber, userId });
             } else {
-                console.error(`Couldn't find user with name :${req.body.username}, err: ${err}`);
-                res.status(500).json({error: "Couldn't get id of this user"});
+                res.status(200).json({ error: "User not found" });
             }
-        });
+        }
+        catch (err) {
+            console.error(`Failed to send message to user: ${req.body.username}, err: ${err}`);
+            res.status(500).json({error: "Failed to send message to this user"});
+        }
     } else {
         res.status(400).json({error: "Missing arguments"});
     }
 }
 
-function getOrCreateChatRoom(chats, botid, userid, callback) {
-    messaging.getRecentChats(userid, userid, 0, 19, (err, result) => {
-        if (err) {
-            callback(err, null);
-        } else {
-            for (room of result.rooms) {
-                if (room.owner === botid) {
-                    return callback(null, room.roomId);
-                }
-            }
-            chats.newRoom({uid: botid}, {touid: userid}, (err2, roomId) => {
-                if (err2) {
-                    callback(err2, null);
-                } else {
-                    callback(null, roomId);
-                }
-            });
+async function getOrCreateChatRoom(req, botid, userId) {
+    const { rooms } = await messaging.getRecentChats(userId, userId, 0, 19);
+    for (room of rooms) {
+        if (room.owner === botid) {
+            return room.roomId;
         }
-    });
+    }
+    const roomObj = await api.chats.create(req, { uids: [userId] });
+    return roomObj.roomId;
 }
 
 function getTutorial(req, res) {
