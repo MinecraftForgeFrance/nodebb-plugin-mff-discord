@@ -1,13 +1,16 @@
-const user = require.main.require("./src/user");
-//const socketPlugins = require.main.require('./src/socket.io/plugins');
-const meta = require.main.require('./src/meta');
-//const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
-//const request = require.main.require('request');
 const nconf = require.main.require('nconf');
+const winston = require.main.require('winston');
+//const request = require.main.require('request');
+
 const api = require.main.require('./src/api');
-const search = require.main.require("./src/search");
+const meta = require.main.require('./src/meta');
+const user = require.main.require('./src/user');
+const search = require.main.require('./src/search');
 const topics = require.main.require('./src/topics');
 const messaging = require.main.require('./src/messaging');
+const routeHelpers = require.main.require('./src/routes/helpers');
+//const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
+//const socketPlugins = require.main.require('./src/socket.io/plugins');
 
 const MFF_USER_UID = 1;
 
@@ -16,20 +19,18 @@ const MFFDiscordBridge = {
     discordWebHook: "changeme",
     tutorialCategoryId: 0,
     supportCategoryId: 0,
-    // init the plugin
+    // Init the plugin
     async init(params) {
-        let app = params.router;
-        let middleware = params.middleware;
+        const { router } = params;
 
-        // discord bridge api
-        app.post("/discordapi/register", checkToken, generateAndSendCode);
-        app.get("/discordapi/tutorial", getTutorial);
-        app.get("/discordapi/solvedthread", getSolvedThread);
-        //app.post("/discordapi/sendshout", checkToken, sendShout);
+        // Discord bridge api
+        router.post('/discordapi/register', checkToken, generateAndSendCode);
+        router.get('/discordapi/tutorial', getTutorial);
+        router.get('/discordapi/solvedthread', getSolvedThread);
+        //app.post('/discordapi/sendshout', checkToken, sendShout);
 
-        // admin panel
-        app.get('/admin/plugins/mff-discord', middleware.admin.buildHeader, renderAdmin);
-        app.get('/api/admin/plugins/mff-discord', renderAdmin);
+        // Admin panel
+        routeHelpers.setupAdminPageRoute(router, '/admin/plugins/mff-discord', [], renderAdmin);
 
         try {
             const options = await meta.settings.get('mffdiscordbridge');
@@ -143,7 +144,7 @@ function getSolvedThread(req, res) {
     return searchInPost(req, res, [MFFDiscordBridge.supportCategoryId]);
 }
 
-function searchInPost(req, res, categories) {
+async function searchInPost(req, res, categories) {
     const data = {
         query: req.query.term,
         searchIn: 'titles',
@@ -155,20 +156,14 @@ function searchInPost(req, res, categories) {
         qs: req.query
     };
 
-    search.search(data, function (err, results) {
-        if (err) {
-            console.log(err);
-            return res.status(500).json({error: "Error while performing the search"});
-        }
-        let tids = results.posts.map(post => post && post.tid);
-        topics.getTopicsTags(tids, (err2, postTags) => {
-            if (err2) {
-                console.log(err2);
-                return res.status(500).json({error: "Error while getting topic tags"});
-            }
+    try {
+        const results = await search.search(data);
+        const topicIds = results.posts.map(post => post && post.tid);
 
+        try {
+            const postTags = await topics.getTopicsTags(topicIds);
             if (results.posts.length === 0) {
-                return res.status(200).json({message: "No result"});
+                return res.status(200).json({ message: 'No result' });
             }
 
             let response = {};
@@ -200,8 +195,16 @@ function searchInPost(req, res, categories) {
                 }
             }
             return res.status(200).json(response);
-        });
-    });
+        }
+        catch (err2) {
+            winston.error(err2);
+            return res.status(500).json({ error: 'Error while getting topic tags' });
+        }
+    }
+    catch (err) {
+        winston.error(err);
+        return res.status(500).json({ error: 'Error while performing the search' });
+    }
 }
 
 function isTagInFilter(tag, tagsFilter) {

@@ -1,12 +1,12 @@
 {
-    "id": "nodebb-plugin-mff-discord",
+    "id": "@minecraftforgefrance/nodebb-plugin-mff-discord",
     "name": "NodeBB Plugin MFF Discord",
     "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord",
     "library": "./index.js",
     "templates": "./static/templates",
-    "acpScripts": [
-        "static/js/admin.js"
-    ],
+    "modules": {
+		"../admin/plugins/mff-discord.js": "static/js/admin.js"
+    },
     "hooks": [
         { "hook": "static:app.load", "method": "init", "priority": 11 },
         { "hook": "filter:admin.header.build", "method": "addToAdminNav" }
