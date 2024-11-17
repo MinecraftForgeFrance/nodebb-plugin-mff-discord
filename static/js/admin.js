@@ -1,4 +1,4 @@
-define('admin/plugins/mff-discord', ['settings'], function(Settings) {
+define('admin/plugins/mff-discord', ['settings', 'alerts'], function(Settings, alerts) {
 	var MFFDiscordBridge = {};
 	
 	MFFDiscordBridge.init = function() {
@@ -6,7 +6,7 @@ define('admin/plugins/mff-discord', ['settings'], function(Settings) {
 	
 		$('#save').on('click', function() {
             Settings.save('mffdiscordbridge', $('.mff-discord-settings'), function() {
-                app.alert({
+                alerts.alert({
                     type: 'success',
                     alert_id: 'mffdiscordbridge-saved',
                     title: 'Settings Saved',

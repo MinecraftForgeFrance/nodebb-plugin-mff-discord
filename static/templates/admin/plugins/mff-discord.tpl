@@ -1,47 +1,53 @@
-<form role="form" class="mff-discord-settings">
-	<div class="row">
-		<div class="col-xs-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">Discord bridge settings</div>
-                <div class="panel-body">
-                    <div class="row">
-                        <div class="col-lg-6 col-xs-12">
-                            <div class="form-group">
-                                <label for="token">
-                                    Discord bot token (keep it secret)
-                                </label>
-                                <input class="form-control" type="text" name="token" id="token" />
-                            </div>
+<div class="acp-page-container">
+	<!-- IMPORT admin/partials/settings/header.tpl -->
 
-                            <div class="form-group">
-                                <label for="webhook">
-                                    Discord webhook url (keep it secret)
-                                </label>
-                                <input class="form-control" placeholder="https://discordapp.com/api/webhooks/..." type="text" name="webhook" id="webhook" />
-                            </div>
-                        </div>
-                        <div class="col-lg-6 col-xs-12">
-                            <div class="form-group">
-                                <label for="tutocatid">
-                                    Tutorial category id
-                                </label>
-                                <input class="form-control" type="number" name="tutocatid" id="tutocatid" />
-                            </div>
+	<div class="row m-0">
+		<div id="spy-container" class="col-12 px-0 mb-4" tabindex="0">
+			<form class="form mff-discord-settings">
+				<div class="mb-4">
+					<h5 class="fw-bold tracking-tight settings-header">API</h5>
 
-                            <div class="form-group">
-                                <label for="supportcatid">
-                                    Support category id
-                                </label>
-                                <input class="form-control" type="number" name="supportcatid" id="supportcatid" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    <div class="mb-3">
+                        <label for="token">
+                            Discord bot token (keep it secret)
+                        </label>
+                        <input class="form-control" type="text" name="token" id="token" />
+					</div>
+
+                    <div class="mb-3">
+						<label for="webhook">
+                            Discord webhook url (keep it secret)
+                        </label>
+                        <input class="form-control" placeholder="https://discordapp.com/api/webhooks/..." type="text" name="webhook" id="webhook" />
+					</div>
+				</div>
+
+				<div class="mb-4">
+                    <h5 class="fw-bold tracking-tight settings-header">Search categories</h5>
+
+                    <div class="mb-3">
+						<label for="tutocatid">
+                            Tutorial category
+                        </label>
+                        <select class="form-control" id="tutocatid" class="form-control" name="tutocatid">
+                        {{{ each categories }}}
+                            <option value="{categories.cid}">{categories.name}</option>
+                        {{{ end }}}
+                        </select>
+					</div>
+
+                    <div class="mb-3">
+                        <label for="supportcatid">
+                            Support category
+                        </label>
+                        <select class="form-control" id="supportcatid" class="form-control" name="supportcatid">
+                        {{{ each categories }}}
+                            <option value="{categories.cid}">{categories.name}</option>
+                        {{{ end }}}
+					    </select>
+					</div>
+				</div>
+			</form>
 		</div>
 	</div>
-</form>
-
-<button id="save" class="floating-button mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
-	<i class="material-icons">save</i>
-</button>
+</div>

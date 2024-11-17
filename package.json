@@ -1,6 +1,6 @@
 {
   "name": "@minecraftforgefrance/nodebb-plugin-mff-discord",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A NodeBB plugin to connect the MFF forum with our Discord. Designed for our needs.",
   "main": "index.js",
   "repository": {
@@ -16,7 +16,7 @@
   ],
   "license": "BSD-2-Clause",
   "nbbpm": {
-    "compatibility": "^2.0.0"
+    "compatibility": "^3.0.0"
   },
   "dependencies": {},
   "devDependencies": {},

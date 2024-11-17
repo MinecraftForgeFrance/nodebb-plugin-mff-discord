@@ -1,14 +1,15 @@
 {
-    "id": "@minecraftforgefrance/nodebb-plugin-mff-discord",
-    "name": "NodeBB Plugin MFF Discord",
-    "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord",
-    "library": "./index.js",
-    "templates": "./static/templates",
-    "modules": {
-		"../admin/plugins/mff-discord.js": "static/js/admin.js"
-    },
-    "hooks": [
-        { "hook": "static:app.load", "method": "init", "priority": 11 },
-        { "hook": "filter:admin.header.build", "method": "addToAdminNav" }
-    ]
+  "id": "@minecraftforgefrance/nodebb-plugin-mff-discord",
+  "name": "NodeBB Plugin MFF Discord",
+  "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord",
+  "library": "./index.js",
+  "templates": "./static/templates",
+  "modules": {
+    "../admin/plugins/mff-discord.js": "static/js/admin.js"
+  },
+  "settingsRoute": "/admin/plugins/mff-discord",
+  "hooks": [
+    { "hook": "static:app.load", "method": "init", "priority": 11 },
+    { "hook": "filter:admin.header.build", "method": "addToAdminNav" }
+  ]
 }

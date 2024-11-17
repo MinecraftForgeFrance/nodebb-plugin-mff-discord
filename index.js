@@ -1,13 +1,14 @@
 const nconf = require.main.require('nconf');
 const winston = require.main.require('winston');
-//const request = require.main.require('request');
 
 const api = require.main.require('./src/api');
 const meta = require.main.require('./src/meta');
 const user = require.main.require('./src/user');
+const db = require.main.require('./src/database');
 const search = require.main.require('./src/search');
 const topics = require.main.require('./src/topics');
 const messaging = require.main.require('./src/messaging');
+const categories = require.main.require('./src/categories');
 const routeHelpers = require.main.require('./src/routes/helpers');
 //const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
 //const socketPlugins = require.main.require('./src/socket.io/plugins');
@@ -30,7 +31,7 @@ const MFFDiscordBridge = {
         //app.post('/discordapi/sendshout', checkToken, sendShout);
 
         // Admin panel
-        routeHelpers.setupAdminPageRoute(router, '/admin/plugins/mff-discord', [], renderAdmin);
+        routeHelpers.setupAdminPageRoute(router, '/admin/plugins/mff-discord', renderAdmin);
 
         try {
             const options = await meta.settings.get('mffdiscordbridge');
@@ -93,7 +94,7 @@ function checkToken(req, res, next) {
     if (token === MFFDiscordBridge.token) {
         next();
     } else {
-        res.status(403).json({error: "Invalid token!"});
+        res.status(403).json({ error: "Invalid token!" });
     }
 }
 
@@ -118,10 +119,10 @@ async function generateAndSendCode(req, res) {
         }
         catch (err) {
             console.error(`Failed to send message to user: ${req.body.username}, err: ${err}`);
-            res.status(500).json({error: "Failed to send message to this user"});
+            res.status(500).json({ error: "Failed to send message to this user" });
         }
     } else {
-        res.status(400).json({error: "Missing arguments"});
+        res.status(400).json({ error: "Missing arguments" });
     }
 }
 
@@ -245,8 +246,13 @@ function isTagInFilter(tag, tagsFilter) {
 //     }
 // }
 
-function renderAdmin(req, res) {
-    res.render('admin/plugins/mff-discord');
+async function renderAdmin(req, res) {
+    const cids = await db.getSortedSetRange('categories:cid', 0, -1);
+	const cats = await categories.getCategoriesFields(cids, ['cid', 'name']);
+    res.render('admin/plugins/mff-discord', {
+        title: 'MFF Discord integration',
+		categories: cats
+    });
 }
 
 function randomizeNumber() {
