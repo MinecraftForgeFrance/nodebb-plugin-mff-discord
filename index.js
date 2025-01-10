@@ -112,7 +112,7 @@ async function generateAndSendCode(req, res) {
                     roomId,
                     message: `Voici votre token d'accès au Discord de Minecraft Forge France : ${randomNumber}.\nSi vous n'avez pas fait de demande de code d'accès, veuillez ignorer ce message.`
                 });
-                res.json({ data: { result: randomNumber, userId } });
+                res.json({ result: randomNumber, userId });
             } else {
                 res.status(200).json({ message: "User not found" });
             }
