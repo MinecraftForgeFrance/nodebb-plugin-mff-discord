@@ -94,7 +94,7 @@ function checkToken(req, res, next) {
     if (token === MFFDiscordBridge.token) {
         next();
     } else {
-        res.status(403).json({ error: "Invalid token!" });
+        res.status(403).json({ message: "Invalid token!" });
     }
 }
 
@@ -112,17 +112,17 @@ async function generateAndSendCode(req, res) {
                     roomId,
                     message: `Voici votre token d'accès au Discord de Minecraft Forge France : ${randomNumber}.\nSi vous n'avez pas fait de demande de code d'accès, veuillez ignorer ce message.`
                 });
-                res.json({ result: randomNumber, userId });
+                res.json({ data: { result: randomNumber, userId } });
             } else {
-                res.status(200).json({ error: "User not found" });
+                res.status(200).json({ message: "User not found" });
             }
         }
         catch (err) {
             console.error(`Failed to send message to user: ${req.body.username}, err: ${err}`);
-            res.status(500).json({ error: "Failed to send message to this user" });
+            res.status(500).json({ message: "Failed to send message to this user" });
         }
     } else {
-        res.status(400).json({ error: "Missing arguments" });
+        res.status(400).json({ message: "Missing arguments" });
     }
 }
 
@@ -195,16 +195,16 @@ async function searchInPost(req, res, categories) {
                     }
                 }
             }
-            return res.status(200).json(response);
+            return res.status(200).json({ data: response });
         }
         catch (err2) {
             winston.error(err2);
-            return res.status(500).json({ error: 'Error while getting topic tags' });
+            return res.status(500).json({ message: 'Error while getting topic tags' });
         }
     }
     catch (err) {
         winston.error(err);
-        return res.status(500).json({ error: 'Error while performing the search' });
+        return res.status(500).json({ message: 'Error while performing the search' });
     }
 }
 
