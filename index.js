@@ -164,7 +164,7 @@ async function searchInPost(req, res, categories) {
         try {
             const postTags = await topics.getTopicsTags(topicIds);
             if (results.posts.length === 0) {
-                return res.status(200).json({ message: 'No result' });
+                return res.status(200).json({ data: [] });
             }
 
             let response = {};
