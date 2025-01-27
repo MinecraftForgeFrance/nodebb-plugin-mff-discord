@@ -1,11 +1,13 @@
 define('admin/plugins/mff-discord', ['settings', 'alerts'], function(Settings, alerts) {
-	var MFFDiscordBridge = {};
+	const MFFDiscordBridge = {};
 	
 	MFFDiscordBridge.init = function() {
-		Settings.load('mffdiscordbridge', $('.mff-discord-settings'));
+        const settingsForm = document.querySelector('.mff-discord-settings');
+        const saveButton = document.getElementById('save');
+		Settings.load('mffdiscordbridge', settingsForm);
 	
-		$('#save').on('click', function() {
-            Settings.save('mffdiscordbridge', $('.mff-discord-settings'), function() {
+		saveButton.addEventListener('click', function() {
+            Settings.save('mffdiscordbridge', settingsForm, function() {
                 alerts.alert({
                     type: 'success',
                     alert_id: 'mffdiscordbridge-saved',

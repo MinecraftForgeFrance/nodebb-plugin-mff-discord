@@ -126,10 +126,10 @@ async function generateAndSendCode(req, res) {
     }
 }
 
-async function getOrCreateChatRoom(req, botid, userId) {
+async function getOrCreateChatRoom(req, botId, userId) {
     const { rooms } = await messaging.getRecentChats(userId, userId, 0, 19);
-    for (room of rooms) {
-        if (room.owner === botid) {
+    for (const room of rooms) {
+        if (room.owner === botId) {
             return room.roomId;
         }
     }
@@ -171,15 +171,15 @@ async function searchInPost(req, res, categories) {
             if (!req.query.hasTags) { // only add none tag if there is not tags filter in the request
                 response['none'] = [];
             }
-            for (tags of postTags) {
-                for (tag of tags) {
+            for (const tags of postTags) {
+                for (const tag of tags) {
                     if (isTagInFilter(tag, req.query.hasTags)) {
                         response[tag] = [];
                     }
                 }
             }
 
-            for (let i in results.posts) {
+            for (const i in results.posts) {
                 let post = {
                     title: results.posts[i].topic.title,
                     url: nconf.get('url') + '/topic/' + results.posts[i].topic.slug
@@ -187,7 +187,7 @@ async function searchInPost(req, res, categories) {
                 if (postTags[i].length === 0) {
                     response['none'].push(post);
                 } else {
-                    for (tag of postTags[i]) {
+                    for (const tag of postTags[i]) {
                         // avoid duplicate if topic has multiple tags
                         if (isTagInFilter(tag, req.query.hasTags)) {
                             response[tag].push(post);
