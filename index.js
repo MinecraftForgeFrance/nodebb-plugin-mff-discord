@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+
 const nconf = require.main.require('nconf');
 const winston = require.main.require('winston');
 
@@ -9,6 +11,7 @@ const search = require.main.require('./src/search');
 const topics = require.main.require('./src/topics');
 const messaging = require.main.require('./src/messaging');
 const categories = require.main.require('./src/categories');
+const helpers = require.main.require('./src/controllers/helpers');
 const routeHelpers = require.main.require('./src/routes/helpers');
 //const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
 //const socketPlugins = require.main.require('./src/socket.io/plugins');
@@ -18,6 +21,7 @@ const MFF_USER_UID = 1;
 const MFFDiscordBridge = {
     token: "changeme",
     discordWebHook: "changeme",
+    jwtSecret: "changeme",
     tutorialCategoryId: 0,
     supportCategoryId: 0,
     // Init the plugin
@@ -25,11 +29,12 @@ const MFFDiscordBridge = {
         const { router } = params;
 
         // Discord bridge api
-        router.post('/discordapi/register', checkToken, generateAndSendCode);
         router.get('/discordapi/tutorial', getTutorial);
         router.get('/discordapi/solvedthread', getSolvedThread);
         //app.post('/discordapi/sendshout', checkToken, sendShout);
 
+        // Discord link account page
+        routeHelpers.setupPageRoute(router, '/discord', showLinkAccountPage);
         // Admin panel
         routeHelpers.setupAdminPageRoute(router, '/admin/plugins/mff-discord', renderAdmin);
 
@@ -41,6 +46,10 @@ const MFFDiscordBridge = {
 
             if (options.hasOwnProperty("webhook")) {
                 MFFDiscordBridge.discordWebHook = options["webhook"];
+            }
+
+            if (options.hasOwnProperty("jwtSecret")) {
+                MFFDiscordBridge.jwtSecret = options["jwtSecret"];
             }
 
             if (options.hasOwnProperty("tutocatid")) {
@@ -88,6 +97,18 @@ const MFFDiscordBridge = {
     }
 };
 
+function showLinkAccountPage(req, res) {
+    const jwtToken = req.query.token;
+    const decoded = jwt.verify(jwtToken, MFFDiscordBridge.jwtSecret);
+    return res.render('discord-link', {
+        breadcrumbs: helpers.buildBreadcrumbs([{ text: '[[mff-discord:link.discord]]' }]),
+        title: '[[mff-discord:link.discord]]',
+        id: decoded.id,
+        displayName: decoded.displayName,
+        avatarUrl: decoded.avatarUrl
+    });
+}
+
 // check token middleware
 function checkToken(req, res, next) {
     let token = req.body.token || req.query.token || "";
@@ -96,45 +117,6 @@ function checkToken(req, res, next) {
     } else {
         res.status(403).json({ message: "Invalid token!" });
     }
-}
-
-async function generateAndSendCode(req, res) {
-    if (req.body.username) {
-        try  {
-            const userId = await user.getUidByUsername(req.body.username);
-            console.log(userId, req.body.username)
-            if (userId > 1) {
-                let randomNumber = randomizeNumber();
-
-                req.uid = MFF_USER_UID;
-                const roomId = await getOrCreateChatRoom(req, MFF_USER_UID, userId);
-                await api.chats.post(req, {
-                    roomId,
-                    message: `Voici votre token d'accès au Discord de Minecraft Forge France : ${randomNumber}.\nSi vous n'avez pas fait de demande de code d'accès, veuillez ignorer ce message.`
-                });
-                res.json({ result: randomNumber, userId });
-            } else {
-                res.status(200).json({ message: "User not found" });
-            }
-        }
-        catch (err) {
-            console.error(`Failed to send message to user: ${req.body.username}, err: ${err}`);
-            res.status(500).json({ message: "Failed to send message to this user" });
-        }
-    } else {
-        res.status(400).json({ message: "Missing arguments" });
-    }
-}
-
-async function getOrCreateChatRoom(req, botId, userId) {
-    const { rooms } = await messaging.getRecentChats(userId, userId, 0, 19);
-    for (const room of rooms) {
-        if (room.owner === botId) {
-            return room.roomId;
-        }
-    }
-    const roomObj = await api.chats.create(req, { uids: [userId] });
-    return roomObj.roomId;
 }
 
 function getTutorial(req, res) {

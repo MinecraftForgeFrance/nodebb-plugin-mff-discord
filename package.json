@@ -18,11 +18,14 @@
   "nbbpm": {
     "compatibility": "^3.0.0 || ^4.0.0"
   },
-  "dependencies": {},
-  "devDependencies": {},
-  "peerDependencies": {},
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  },
   "bugs": {
     "url": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord/issues"
   },
-  "homepage": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord#readme"
+  "homepage": "https://github.com/MinecraftForgeFrance/nodebb-plugin-mff-discord#readme",
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.9"
+  }
 }

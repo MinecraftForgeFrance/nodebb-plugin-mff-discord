@@ -20,6 +20,13 @@
                         </label>
                         <input class="form-control" placeholder="https://discordapp.com/api/webhooks/..." type="text" name="webhook" id="webhook" />
 					</div>
+
+                    <div class="mb-3">
+                        <label for="token">
+                            Discord JWT secret (keep it secret)
+                        </label>
+                        <input class="form-control" type="text" name="jwtSecret" id="jwtSecret" />
+					</div>
 				</div>
 
 				<div class="mb-4">
