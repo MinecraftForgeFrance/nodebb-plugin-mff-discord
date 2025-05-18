@@ -11,6 +11,7 @@ const search = require.main.require('./src/search');
 const topics = require.main.require('./src/topics');
 const messaging = require.main.require('./src/messaging');
 const categories = require.main.require('./src/categories');
+const middleware = require.main.require('./src/middleware');
 const helpers = require.main.require('./src/controllers/helpers');
 const routeHelpers = require.main.require('./src/routes/helpers');
 //const shouts = require('../nodebb-plugin-shoutbox/lib/shouts');
@@ -19,9 +20,10 @@ const routeHelpers = require.main.require('./src/routes/helpers');
 const MFF_USER_UID = 1;
 
 const MFFDiscordBridge = {
-    token: "changeme",
-    discordWebHook: "changeme",
-    jwtSecret: "changeme",
+    token: "changeMe",
+    discordWebHook: "changeMe",
+    jwtSecret: "changeMe",
+    registrationCallback: "changeMe",
     tutorialCategoryId: 0,
     supportCategoryId: 0,
     // Init the plugin
@@ -34,7 +36,8 @@ const MFFDiscordBridge = {
         //app.post('/discordapi/sendshout', checkToken, sendShout);
 
         // Discord link account page
-        routeHelpers.setupPageRoute(router, '/discord', showLinkAccountPage);
+        routeHelpers.setupPageRoute(router, '/discord', [middleware.ensureLoggedIn], showLinkAccountPage);
+        router.post('/discord', middleware.ensureLoggedIn, linkDiscordAccount);
         // Admin panel
         routeHelpers.setupAdminPageRoute(router, '/admin/plugins/mff-discord', renderAdmin);
 
@@ -52,12 +55,16 @@ const MFFDiscordBridge = {
                 MFFDiscordBridge.jwtSecret = options["jwtSecret"];
             }
 
-            if (options.hasOwnProperty("tutocatid")) {
-                MFFDiscordBridge.tutorialCategoryId = options["tutocatid"];
+            if (options.hasOwnProperty("registrationCallback")) {
+                MFFDiscordBridge.registrationCallback = options["registrationCallback"];
             }
 
-            if (options.hasOwnProperty("supportcatid")) {
-                MFFDiscordBridge.supportCategoryId = options["supportcatid"];
+            if (options.hasOwnProperty("tutorialCategoryId")) {
+                MFFDiscordBridge.tutorialCategoryId = options["tutorialCategoryId"];
+            }
+
+            if (options.hasOwnProperty("supportCategoryId")) {
+                MFFDiscordBridge.supportCategoryId = options["supportCategoryId"];
             }
         }
         catch (err) {
@@ -99,14 +106,52 @@ const MFFDiscordBridge = {
 
 function showLinkAccountPage(req, res) {
     const jwtToken = req.query.token;
-    const decoded = jwt.verify(jwtToken, MFFDiscordBridge.jwtSecret);
-    return res.render('discord-link', {
-        breadcrumbs: helpers.buildBreadcrumbs([{ text: '[[mff-discord:link.discord]]' }]),
-        title: '[[mff-discord:link.discord]]',
-        id: decoded.id,
-        displayName: decoded.displayName,
-        avatarUrl: decoded.avatarUrl
-    });
+    try {
+        const decoded = jwt.verify(jwtToken, MFFDiscordBridge.jwtSecret);
+        return res.render('discord-link', {
+            breadcrumbs: helpers.buildBreadcrumbs([{ text: '[[mff-discord:link.discord]]' }]),
+            title: '[[mff-discord:link.discord]]',
+            id: decoded.id,
+            displayName: decoded.displayName,
+            avatarUrl: decoded.avatarUrl
+        });
+    }
+    catch (err) {
+        winston.error('Fail to decode token', err);
+        return res.render('500', {
+            title: '[[mff-discord:link.discord]]',
+            error: '[[mff-discord:link.error]]',
+        });
+    }
+}
+
+async function linkDiscordAccount(req, res) {
+    const jwtToken = req.query.token;
+    try {
+        const decoded = jwt.verify(jwtToken, MFFDiscordBridge.jwtSecret);
+        // Re-encode the token with the uid of the user on the forum
+        const newToken = jwt.sign({ ...decoded, forumUid: req.user.uid }, MFFDiscordBridge.jwtSecret);
+        try {
+            const response = await fetch(MFFDiscordBridge.registrationCallback, {
+                method: 'POST',
+                headers: {
+                    'User-Agent': 'MFF Discord Bridge',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    token: newToken,
+                }),
+            });
+            const data = await response.json();
+            res.status(response.status).json(data);
+        }
+        catch (reqErr) {
+            return res.status(500).json({ error: '[[mff-discord:request.error]]' });
+        }
+    }
+    catch (jwtErr) {
+        return res.status(500).json({ error: '[[mff-discord:link.error]]' });
+    }
 }
 
 // check token middleware

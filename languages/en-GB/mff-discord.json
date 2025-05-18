@@ -1,3 +1,9 @@
 {
-    "link.discord": "Link Discord account"
+    "link.discord": "Link Discord account",
+    "link.error": "The link has expired or is invalid. Please try again.",
+    "link.confirm": "Confirm Discord account linking",
+    "link.introduction": "Your Discord account will be linked to your Minecraft Forge France account. This will allow you to access our Discord and post messages that can be synchronized with the forum.",
+    "link.warning": "Only confirm if the Discord account below matches yours!",
+    "link:success": "Your Discord account has been successfully linked 🎉",
+    "request.error": "The Discord bot seems to be unavailable. Please try again later."
 }

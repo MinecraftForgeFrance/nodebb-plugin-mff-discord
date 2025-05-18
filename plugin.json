@@ -5,7 +5,8 @@
   "library": "./index.js",
   "templates": "./static/templates",
   "modules": {
-    "../admin/plugins/mff-discord.js": "static/js/admin.js"
+    "../admin/plugins/mff-discord.js": "static/js/admin.js",
+    "../client/discord-link.js": "static/js/discord-link.js"
   },
   "settingsRoute": "/admin/plugins/mff-discord",
   "hooks": [

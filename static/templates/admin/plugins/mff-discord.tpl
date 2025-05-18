@@ -22,10 +22,17 @@
 					</div>
 
                     <div class="mb-3">
-                        <label for="token">
+                        <label for="jwtSecret">
                             Discord JWT secret (keep it secret)
                         </label>
                         <input class="form-control" type="text" name="jwtSecret" id="jwtSecret" />
+					</div>
+
+                    <div class="mb-3">
+						<label for="registrationCallback">
+                            Discord registration callback url
+                        </label>
+                        <input class="form-control" placeholder="http://discordbot/registration/callback" type="text" name="registrationCallback" id="registrationCallback" />
 					</div>
 				</div>
 
@@ -33,10 +40,10 @@
                     <h5 class="fw-bold tracking-tight settings-header">Search categories</h5>
 
                     <div class="mb-3">
-						<label for="tutocatid">
+						<label for="tutorialCategoryId">
                             Tutorial category
                         </label>
-                        <select class="form-control" id="tutocatid" class="form-control" name="tutocatid">
+                        <select class="form-control" id="tutorialCategoryId" name="tutorialCategoryId">
                         {{{ each categories }}}
                             <option value="{categories.cid}">{categories.name}</option>
                         {{{ end }}}
@@ -44,10 +51,10 @@
 					</div>
 
                     <div class="mb-3">
-                        <label for="supportcatid">
+                        <label for="supportCategoryId">
                             Support category
                         </label>
-                        <select class="form-control" id="supportcatid" class="form-control" name="supportcatid">
+                        <select class="form-control" id="supportCategoryId" name="supportCategoryId">
                         {{{ each categories }}}
                             <option value="{categories.cid}">{categories.name}</option>
                         {{{ end }}}
