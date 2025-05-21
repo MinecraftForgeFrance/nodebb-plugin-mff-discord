@@ -27,7 +27,12 @@ define('forum/discord-link', ['translator'], (translator) => {
 					}
 				}
 				else {
-					showSuccess('[[mff-discord:link.success]]');
+					if (data.code === 0) {
+						showSuccess('[[mff-discord:link.success]]');
+					}
+					else {
+						showSuccess('[[mff-discord:link.already.done]]');
+					}
 				}
 			}
 			catch(resp) {

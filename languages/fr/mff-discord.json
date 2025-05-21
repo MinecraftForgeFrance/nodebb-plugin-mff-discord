@@ -4,6 +4,7 @@
     "link.confirm": "Confirmer la liaison du compte Discord",
     "link.introduction": "Votre compte Discord sera relié à votre compte Minecraft Forge France. Cela vous permettra d'accéder à notre discord et d'y poster des messages qui pourront être synchronisé avec le forum.",
     "link.warning": "Ne confirmez que si le compte discord ci-dessous correspond bien au votre !",
-    "link:success": "Votre compte Discord a été lié avec succès 🎉",
+    "link.success": "Votre compte Discord a été lié avec succès 🎉",
+    "link.already.done": "Votre compte Discord est déjà lié à votre compte Minecraft Forge France. Vous avez pleinement accès à notre Discord",
     "request.error": "Le bot Discord semble indisponible. Veuillez réessayer plus tard."
 }

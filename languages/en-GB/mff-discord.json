@@ -4,6 +4,7 @@
     "link.confirm": "Confirm Discord account linking",
     "link.introduction": "Your Discord account will be linked to your Minecraft Forge France account. This will allow you to access our Discord and post messages that can be synchronized with the forum.",
     "link.warning": "Only confirm if the Discord account below matches yours!",
-    "link:success": "Your Discord account has been successfully linked 🎉",
+    "link.success": "Your Discord account has been successfully linked 🎉",
+    "link.already.done": "Your Discord account is already linked to your Minecraft Forge France account. You have full access to our Discord.",
     "request.error": "The Discord bot seems to be unavailable. Please try again later."
 }
